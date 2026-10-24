@@ -1,0 +1,18 @@
+# Core
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+numpy>=1.24
+faster-whisper>=1.0        # SYSTRAN/faster-whisper – speech recognition
+deep-translator>=1.11      # nidhaloff/deep-translator – subtitle translation
+
+# Voice engines (online)
+edge-tts>=6.1              # rany2/edge-tts – 400+ neural voices
+gTTS>=2.5                  # pndurette/gTTS
+
+# Voice engines (offline)
+piper-tts>=1.2             # rhasspy/piper – run scripts/download_piper_voices.py
+
+# Optional heavy engines – uncomment to enable
+# kokoro>=0.9 soundfile     # hexgrad/kokoro
+# coqui-tts>=0.24           # idiap/coqui-ai-TTS – XTTS-v2 voice cloning
