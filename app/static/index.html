@@ -11,17 +11,21 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="logo" title="Vocalize by HuyFlou — tự động tạo phụ đề & lồng tiếng cho video">
+    <div class="brand" title="Vocalize by HuyFlou — tự động tạo phụ đề & lồng tiếng cho video">
       <span class="logo-mark">▶</span>
-      <span class="logo-text">
-        <span class="logo-name">Vocalize <span class="logo-ver">v2.0</span></span>
-        <span class="logo-by">by <b>HuyFlou</b> · Phụ đề & lồng tiếng tự động</span>
-      </span>
+      <div class="brand-text">
+        <div class="brand-name">Vocalize <span class="brand-ver">v2.0</span></div>
+        <div class="brand-by">by <b>HuyFlou</b></div>
+        <div class="brand-tag">Phụ đề & lồng tiếng tự động</div>
+      </div>
     </div>
-    <nav class="steps" id="steps">
+    <nav class="steps" id="steps" aria-label="Các bước">
       <button class="step active" data-step="1"><b>1</b> Tải video</button>
+      <span class="step-line"></span>
       <button class="step" data-step="2"><b>2</b> Phụ đề</button>
+      <span class="step-line"></span>
       <button class="step" data-step="3"><b>3</b> Giọng đọc</button>
+      <span class="step-line"></span>
       <button class="step" data-step="4"><b>4</b> Xuất video</button>
     </nav>
     <button class="kbd-hint" id="kbdHint" title="Phím tắt">⌨ Phím tắt</button>
@@ -86,6 +90,7 @@
       <!-- STEP 1 -->
       <section class="block block-yellow" id="step1">
         <h2 class="block-title"><span class="num">1</span> Tải video lên</h2>
+        <p class="block-sub">Kéo thả video và chọn ngôn ngữ — app sẽ tự nghe và viết phụ đề.</p>
         <label class="dropzone" id="dropzone">
           <input type="file" id="fileInput" accept="video/*,audio/*" hidden>
           <div class="dz-icon">⬆</div>
@@ -129,6 +134,7 @@
         <h2 class="block-title"><span class="num">2</span> Chỉnh sửa phụ đề
           <span class="pill" id="segCount"></span>
         </h2>
+        <p class="block-sub">Sửa chữ, chỉnh thời gian, gán giọng cho từng câu. Xuất phụ đề bất cứ lúc nào.</p>
 
         <div class="export-bar">
           <span class="export-label">Xuất phụ đề:</span>
@@ -151,6 +157,7 @@
       <!-- STEP 3 -->
       <section class="block block-blue locked" id="step3">
         <h2 class="block-title"><span class="num">3</span> Chọn giọng đọc</h2>
+        <p class="block-sub">Bấm một gợi ý nhanh, hoặc tự ghép dàn giọng từ nhiều nguồn khác nhau.</p>
 
         <div class="quick" id="quickWrap">
           <div class="sub-title">⚡ Gợi ý nhanh</div>
@@ -190,6 +197,7 @@
       <!-- STEP 4 -->
       <section class="block block-green locked" id="step4">
         <h2 class="block-title"><span class="num">4</span> Xuất video</h2>
+        <p class="block-sub">Tinh chỉnh âm thanh và kiểu phụ đề, rồi tạo video hoàn chỉnh.</p>
         <div class="grid-2">
           <div class="tile">
             <div class="tile-title">🔊 Âm thanh</div>
