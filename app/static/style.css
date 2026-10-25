@@ -38,7 +38,15 @@ button { cursor: pointer; }
   padding: 12px 28px; border-bottom: var(--border); background: var(--card);
   position: sticky; top: 0; z-index: 30;
 }
-.logo { font-weight: 800; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-text { display: flex; flex-direction: column; line-height: 1.15; }
+.logo-name { font-weight: 800; font-size: 22px; display: flex; align-items: center; gap: 6px; }
+.logo-ver {
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border: 2px solid var(--ink); border-radius: 999px;
+  background: var(--green);
+}
+.logo-by { font-size: 12px; color: var(--muted); }
+.logo-by b { color: var(--ink); background: var(--yellow); padding: 0 5px; border-radius: 5px; }
 .logo-mark {
   display: inline-grid; place-items: center; width: 36px; height: 36px;
   background: var(--pink); border: var(--border); border-radius: 12px; box-shadow: var(--shadow-sm); font-size: 15px;
@@ -421,6 +429,7 @@ input[type=range] { width: 100%; accent-color: var(--ink); }
 @media (max-width: 640px) {
   .grid-3, .grid-2, .choice-row, .downloads { grid-template-columns: 1fr; }
   .steps, .kbd-hint { display: none; }
+  .logo-by { font-size: 11px; }
   .seg { grid-template-columns: 1fr; }
   .seg-time { flex-direction: row; align-items: center; flex-wrap: wrap; }
   .seg-time input { width: 74px; }

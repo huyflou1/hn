@@ -1,4 +1,4 @@
-# 🎬 Vocalize – Tự động tạo phụ đề & lồng tiếng cho video
+# 🎬 Vocalize by HuyFlou – Tự động tạo phụ đề & lồng tiếng cho video
 
 Tải video lên → app tự **nhận dạng lời thoại thành phụ đề**, (tuỳ chọn) **dịch sang ngôn ngữ khác**,
 rồi **lồng tiếng** bằng nhiều giọng đọc lấy từ các dự án mã nguồn mở trên GitHub.

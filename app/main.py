@@ -39,7 +39,7 @@ def load_dotenv(path: Path) -> None:
 
 load_dotenv(ROOT.parent / ".env")
 
-app = FastAPI(title="Vocalize – phụ đề & lồng tiếng tự động")
+app = FastAPI(title="Vocalize by HuyFlou – phụ đề & lồng tiếng tự động", version="2.0")
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
