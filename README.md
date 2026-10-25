@@ -36,7 +36,12 @@ Engine nào chưa cài sẽ hiện nhãn **"chưa cài"** kèm lệnh cài đặ
 
 ## Cài đặt & chạy
 
-Yêu cầu: Python 3.10+, `ffmpeg` (có libass để in cứng phụ đề).
+Yêu cầu: Python **3.10–3.12**, `ffmpeg` (có libass để in cứng phụ đề).
+
+**Windows:** bấm đúp `setup.bat` (tự cài Python 3.12, ffmpeg, thư viện, giọng Piper), sau đó bấm đúp `run.bat`.
+Không dùng Python của MSYS2/UCRT64 vì faster-whisper (ctranslate2) không có bản cho Python đó.
+
+**Linux/macOS:**
 
 ```bash
 pip install -r requirements.txt
