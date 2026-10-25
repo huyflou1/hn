@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -57,6 +58,10 @@ class PiperTTS(TTSEngine):
     description = ("TTS neural chạy offline, nhanh trên CPU. Giọng Việt: vais1000, 25hours và "
                    "vivos (nhiều người đọc). Bấm ⬇ để tải giọng ngay trong app.")
     install_hint = "pip install piper-tts"
+
+    def __init__(self):
+        self._loaded: dict[Path, object] = {}
+        self._lock = threading.Lock()
 
     def _cmd(self) -> list[str] | None:
         if shutil.which("piper"):
@@ -134,8 +139,38 @@ class PiperTTS(TTSEngine):
         if not model.exists():
             self.download(stem)
         out_path = out_path.rsplit(".", 1)[0] + ".wav"
-        cmd = [*self._cmd(), "--model", str(model), "--output_file", out_path]
-        if speaker:
-            cmd += ["--speaker", speaker]
-        subprocess.run(cmd, input=text.encode("utf-8"), check=True, capture_output=True)
+        speaker_id = int(speaker) if speaker else None
+        if importlib.util.find_spec("piper") is not None:
+            self._synthesize_api(model, text, out_path, speaker_id)
+        else:
+            self._synthesize_cli(model, text, out_path, speaker_id)
         return out_path
+
+    def _synthesize_api(self, model: Path, text: str, out_path: str, speaker_id: int | None) -> None:
+        """In-process synthesis: no console encoding issues (Windows) and the model stays loaded."""
+        import wave
+
+        from piper import PiperVoice
+
+        with self._lock:
+            voice = self._loaded.get(model)
+            if voice is None:
+                voice = self._loaded[model] = PiperVoice.load(str(model))
+            with wave.open(out_path, "wb") as wav:
+                if hasattr(voice, "synthesize_wav"):  # piper-tts >= 1.3
+                    from piper import SynthesisConfig
+
+                    voice.synthesize_wav(text, wav, syn_config=SynthesisConfig(speaker_id=speaker_id))
+                else:  # piper-tts 1.2
+                    voice.synthesize(text, wav, speaker_id=speaker_id)
+
+    def _synthesize_cli(self, model: Path, text: str, out_path: str, speaker_id: int | None) -> None:
+        cmd = [*self._cmd(), "--model", str(model), "--output_file", out_path]
+        if speaker_id is not None:
+            cmd += ["--speaker", str(speaker_id)]
+        # Force UTF-8 so Vietnamese text survives the pipe on Windows consoles.
+        env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+        proc = subprocess.run(cmd, input=text.encode("utf-8"), capture_output=True, env=env)
+        if proc.returncode != 0:
+            err = proc.stderr.decode("utf-8", errors="replace").strip().splitlines()
+            raise RuntimeError(err[-1] if err else f"piper thoát với mã {proc.returncode}")
