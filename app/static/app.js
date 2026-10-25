@@ -58,6 +58,7 @@ const clock = (t) => {
 const parseTime = (str) => String(str).split(":").map(Number).reduce((acc, p) => acc * 60 + p, 0);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const langName = (code) => code === "*" ? "Đa ngôn ngữ" : (LANGS.find(([c]) => c === base(code))?.[1] || code);
+const isReady = (v) => v.installed !== false;  // older servers don't send the field
 const voiceKey = (v) => `${v.engine}:${v.id}`;
 const engineName = (id) => state.engines.find((e) => e.id === id)?.name || id;
 const engineOk = (id) => !!state.engines.find((e) => e.id === id && e.available);
@@ -611,6 +612,17 @@ function loadVoices(id) {
   return state.voiceLoads[id];
 }
 
+const API_VERSION = 2;
+
+/* The UI files are re-read on every page load but Python code isn't, so an old server can serve a new UI. */
+async function checkServerVersion() {
+  let v = 0;
+  try { v = (await (await api("/api/version")).json()).version; } catch {}
+  if (v < API_VERSION) {
+    toast("⚠ Máy chủ đang chạy bản cũ. Hãy đóng cửa sổ run.bat rồi bấm đúp run.bat lại.", 15000);
+  }
+}
+
 async function loadEngines() {
   state.engines = await (await api("/api/engines")).json();
   renderTabs();
@@ -709,7 +721,7 @@ function renderVoices() {
     (!state.gender || v.gender === state.gender) &&
     (!q || `${v.name} ${v.id} ${v.lang} ${v.tags.join(" ")} ${engineName(v.engine)}`.toLowerCase().includes(q)));
   // Native voices first, then multilingual ones, then models that still need downloading.
-  const rank = (v) => (v.installed ? 0 : 2) + (v.lang === "*" ? 1 : 0);
+  const rank = (v) => (isReady(v) ? 0 : 2) + (v.lang === "*" ? 1 : 0);
   list.sort((a, b) => rank(a) - rank(b));
   const box = $("#voices");
   box.innerHTML = "";
@@ -720,9 +732,9 @@ function renderVoices() {
   for (const v of list.slice(0, MAX_CARDS)) {
     const isPicked = picked.has(voiceKey(v));
     const el = document.createElement("div");
-    el.className = `voice ${isPicked ? "picked" : ""} ${v.installed ? "" : "missing"}`;
+    el.className = `voice ${isPicked ? "picked" : ""} ${isReady(v) ? "" : "missing"}`;
     const g = v.gender === "female" ? "♀" : v.gender === "male" ? "♂" : "◆";
-    const actions = v.installed
+    const actions = isReady(v)
       ? `<button class="play">▶ Nghe</button><button class="add">${isPicked ? "✓ Đã chọn" : "＋ Chọn"}</button>`
       : `<button class="dl-btn">⬇ Tải${v.size_mb ? ` ${Math.round(v.size_mb)}MB` : ""}</button>`;
     el.innerHTML = `
@@ -824,7 +836,7 @@ function quickPicks() {
   const lang = targetLang();
   const edge = state.voices.edge || [];
   const picks = [];
-  const has = (engine, id) => (state.voices[engine] || []).some((v) => v.id === id && v.installed);
+  const has = (engine, id) => (state.voices[engine] || []).some((v) => v.id === id && isReady(v));
   const add = (icon, label, sub, ids, mode = "single") => {
     const voices = ids.filter(([e, id]) => has(e, id));
     if (voices.length === ids.length) picks.push({ icon, label, sub, ids, mode });
@@ -1034,4 +1046,5 @@ initExport();
 renderCast();
 setStep(1);
 updateHint();
+checkServerVersion();
 loadEngines().catch((e) => toast(`Không kết nối được máy chủ: ${e.message}`, 6000));

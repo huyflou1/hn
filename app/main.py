@@ -245,6 +245,14 @@ def job_file(jid: str, name: str):
 
 
 # ---------------------------------------------------------------- voices
+API_VERSION = 2  # bump when the UI starts depending on new endpoints/fields
+
+
+@app.get("/api/version")
+def version():
+    return {"version": API_VERSION}
+
+
 @app.get("/api/engines")
 def engines():
     return [e.info() for e in ENGINES.values()]
