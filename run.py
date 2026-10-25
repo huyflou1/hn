@@ -31,6 +31,6 @@ def pick_port() -> int:
 if __name__ == "__main__":
     port = pick_port()
     url = f"http://localhost:{port}"
-    print(f"\n  Vocalize đang chạy tại: {url}\n")
+    print(f"\n  Vocalize is running at: {url}\n")
     threading.Timer(2.0, lambda: webbrowser.open(url)).start()
     uvicorn.run("app.main:app", host="127.0.0.1", port=port)
