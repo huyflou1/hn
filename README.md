@@ -46,10 +46,8 @@ Không dùng Python của MSYS2/UCRT64 vì faster-whisper (ctranslate2) không c
 ```bash
 pip install -r requirements.txt
 python scripts/download_piper_voices.py     # tải giọng Piper (Việt + Anh)
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+python run.py        # tự chọn cổng trống và mở trình duyệt
 ```
-
-Mở http://localhost:8000
 
 Hoặc dùng Docker:
 
