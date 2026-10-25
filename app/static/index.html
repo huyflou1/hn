@@ -5,29 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vocalize – Phụ đề & lồng tiếng tự động</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="logo"><span class="logo-mark">▶</span> Vocalize</div>
     <nav class="steps" id="steps">
-      <div class="step active" data-step="1"><b>1</b> Tải video</div>
-      <div class="step" data-step="2"><b>2</b> Phụ đề</div>
-      <div class="step" data-step="3"><b>3</b> Giọng đọc</div>
-      <div class="step" data-step="4"><b>4</b> Xuất video</div>
+      <button class="step active" data-step="1"><b>1</b> Tải video</button>
+      <button class="step" data-step="2"><b>2</b> Phụ đề</button>
+      <button class="step" data-step="3"><b>3</b> Giọng đọc</button>
+      <button class="step" data-step="4"><b>4</b> Xuất video</button>
     </nav>
+    <button class="kbd-hint" id="kbdHint" title="Phím tắt">⌨ Phím tắt</button>
   </header>
+
+  <div class="kbd-panel hidden" id="kbdPanel">
+    <div><kbd>Space</kbd> / <kbd>K</kbd> Phát / dừng</div>
+    <div><kbd>J</kbd> / <kbd>L</kbd> Câu trước / câu sau</div>
+    <div><kbd>←</kbd> / <kbd>→</kbd> Lùi / tới 5 giây</div>
+    <div><kbd>C</kbd> Bật / tắt phụ đề · <kbd>F</kbd> Toàn màn hình</div>
+  </div>
 
   <main class="layout">
     <!-- Left: preview -->
     <aside class="col-preview">
       <section class="block block-dark sticky">
-        <h2 class="block-title">🎬 Xem trước</h2>
-        <div class="player" id="player">
-          <div class="player-empty">Video của bạn sẽ hiện ở đây</div>
+        <div class="preview-head">
+          <h2 class="block-title">🎬 Xem trước</h2>
+          <div class="src-toggle hidden" id="srcToggle">
+            <button data-src="source" class="on">Gốc</button>
+            <button data-src="result">Kết quả</button>
+          </div>
         </div>
+
+        <div class="player" id="player">
+          <video id="video" playsinline preload="metadata"></video>
+          <div class="player-empty" id="playerEmpty">Video của bạn sẽ hiện ở đây</div>
+          <div class="sub-overlay" id="subOverlay"></div>
+          <button class="big-play hidden" id="bigPlay" aria-label="Phát">▶</button>
+        </div>
+
+        <div class="mini-ctrl" id="ctrl">
+          <div class="timeline" id="timeline">
+            <div class="tl-marks" id="tlMarks"></div>
+            <div class="tl-fill" id="tlFill"></div>
+            <div class="tl-head" id="tlHead"></div>
+            <div class="tl-tip hidden" id="tlTip"></div>
+          </div>
+          <div class="ctrl-row">
+            <button class="cb" id="cPrev" title="Câu trước (J)">⏮</button>
+            <button class="cb cb-main" id="cPlay" title="Phát / dừng (Space)">▶</button>
+            <button class="cb" id="cNext" title="Câu sau (L)">⏭</button>
+            <span class="ctime" id="cTime">00:00 / 00:00</span>
+            <span class="grow"></span>
+            <div class="vol-wrap">
+              <button class="cb" id="cMute" title="Tắt tiếng">🔊</button>
+              <input type="range" id="cVol" min="0" max="1" step="0.05" value="1" aria-label="Âm lượng">
+            </div>
+            <button class="cb cb-text" id="cRate" title="Tốc độ phát">1×</button>
+            <button class="cb cb-text on" id="cCC" title="Phụ đề (C)">CC</button>
+            <button class="cb" id="cFull" title="Toàn màn hình (F)">⛶</button>
+          </div>
+        </div>
+
         <div class="meta" id="meta"></div>
+        <div class="next-hint" id="nextHint">👉 Bắt đầu bằng cách tải video lên ở bước 1</div>
       </section>
     </aside>
 
@@ -45,19 +88,15 @@
 
         <div class="grid-3">
           <div class="field">
-            <label>Ngôn ngữ trong video</label>
-            <select id="srcLang">
-              <option value="">🔎 Tự nhận diện</option>
-            </select>
+            <label for="srcLang">Ngôn ngữ trong video</label>
+            <select id="srcLang"><option value="">🔎 Tự nhận diện</option></select>
           </div>
           <div class="field">
-            <label>Dịch phụ đề sang</label>
-            <select id="dstLang">
-              <option value="">— Giữ nguyên —</option>
-            </select>
+            <label for="dstLang">Phụ đề & giọng đọc bằng</label>
+            <select id="dstLang"><option value="">— Giữ nguyên ngôn ngữ gốc —</option></select>
           </div>
           <div class="field">
-            <label>Độ chính xác nhận dạng</label>
+            <label for="model">Độ chính xác nhận dạng</label>
             <select id="model">
               <option value="tiny">⚡ Siêu nhanh (tiny)</option>
               <option value="base">🚀 Nhanh (base)</option>
@@ -83,10 +122,21 @@
         <h2 class="block-title"><span class="num">2</span> Chỉnh sửa phụ đề
           <span class="pill" id="segCount"></span>
         </h2>
-        <p class="hint">Bấm vào câu để sửa. Mỗi câu có thể chọn giọng đọc riêng — rất hợp cho video hội thoại nhiều nhân vật.</p>
+
+        <div class="export-bar">
+          <span class="export-label">Xuất phụ đề:</span>
+          <button class="btn btn-sm btn-yellow" data-export="srt">⬇ .SRT</button>
+          <button class="btn btn-sm btn-ghost" data-export="vtt">⬇ .VTT</button>
+          <button class="btn btn-sm btn-ghost hidden" data-export="bi" id="expBi">⬇ Song ngữ .SRT</button>
+          <button class="btn btn-sm btn-ghost hidden" data-export="orig" id="expOrig">⬇ Bản gốc .SRT</button>
+          <button class="btn btn-sm btn-ghost" data-export="txt">⬇ .TXT</button>
+        </div>
+
         <div class="seg-tools">
           <input type="search" id="segSearch" placeholder="🔍 Tìm trong phụ đề...">
-          <button class="btn btn-sm btn-ghost" id="btnAddSeg">＋ Thêm câu</button>
+          <input type="text" id="segReplace" placeholder="Thay bằng...">
+          <button class="btn btn-sm btn-ghost" id="btnReplace" title="Thay tất cả kết quả tìm được">⇄ Thay</button>
+          <button class="btn btn-sm btn-ghost" id="btnAddSeg">＋ Câu</button>
         </div>
         <div class="segments" id="segments"></div>
       </section>
@@ -95,31 +145,38 @@
       <section class="block block-blue locked" id="step3">
         <h2 class="block-title"><span class="num">3</span> Chọn giọng đọc</h2>
 
-        <div class="sub-title">Nguồn giọng (repo GitHub)</div>
-        <div class="engines" id="engines"></div>
+        <div class="quick" id="quickWrap">
+          <div class="sub-title">⚡ Gợi ý nhanh</div>
+          <div class="quick-row" id="quick"></div>
+        </div>
+
+        <div class="sub-title">Nguồn giọng</div>
+        <div class="tabs" id="engines"></div>
+        <div class="engine-info" id="engineInfo"></div>
 
         <div class="voice-filters">
           <input type="search" id="voiceSearch" placeholder="🔍 Tìm giọng...">
-          <select id="voiceLang"></select>
+          <select id="voiceLang" aria-label="Ngôn ngữ"></select>
           <div class="seg-toggle" id="genderFilter">
             <button data-g="" class="on">Tất cả</button>
             <button data-g="female">♀ Nữ</button>
             <button data-g="male">♂ Nam</button>
           </div>
         </div>
+        <div class="voice-count" id="voiceCount"></div>
         <div class="voices" id="voices"></div>
 
         <div class="sub-title">🎭 Dàn giọng đã chọn <span class="hint">(bấm ＋ trên thẻ giọng để thêm)</span></div>
-        <div class="cast" id="cast"><div class="cast-empty">Chưa chọn giọng nào</div></div>
+        <div class="cast" id="cast"></div>
 
         <div class="sub-title">Cách phân giọng</div>
         <div class="choice-row" id="castMode">
           <label class="choice"><input type="radio" name="mode" value="single" checked>
-            <div><b>🎙 Một giọng</b><span>Toàn bộ video dùng giọng đầu tiên</span></div></label>
+            <div><b>🎙 Một giọng</b><span>Cả video dùng giọng số 1</span></div></label>
           <label class="choice"><input type="radio" name="mode" value="rotate">
             <div><b>🔁 Luân phiên</b><span>Mỗi câu đổi giọng lần lượt</span></div></label>
           <label class="choice"><input type="radio" name="mode" value="manual">
-            <div><b>✍ Tự chọn</b><span>Gán giọng cho từng câu ở bước 2</span></div></label>
+            <div><b>✍ Tự chọn</b><span>Gán giọng từng câu ở bước 2</span></div></label>
         </div>
       </section>
 
@@ -129,14 +186,14 @@
         <div class="grid-2">
           <div class="tile">
             <div class="tile-title">🔊 Âm thanh</div>
-            <div class="range"><label>Tốc độ đọc <output id="speedOut">1.0×</output></label>
+            <div class="range"><label for="speed">Tốc độ đọc <output id="speedOut">1.0×</output></label>
               <input type="range" id="speed" min="0.7" max="1.5" step="0.05" value="1"></div>
-            <div class="range"><label>Âm lượng giọng đọc <output id="voiceVolOut">100%</output></label>
+            <div class="range"><label for="voiceVol">Âm lượng giọng đọc <output id="voiceVolOut">100%</output></label>
               <input type="range" id="voiceVol" min="0" max="2" step="0.05" value="1"></div>
             <label class="switch"><input type="checkbox" id="keepOrig" checked><span></span> Giữ âm thanh gốc làm nền</label>
-            <div class="range" id="origVolWrap"><label>Âm lượng gốc <output id="origVolOut">15%</output></label>
+            <div class="range" id="origVolWrap"><label for="origVol">Âm lượng gốc <output id="origVolOut">15%</output></label>
               <input type="range" id="origVol" min="0" max="1" step="0.05" value="0.15"></div>
-            <label class="switch"><input type="checkbox" id="autoFit" checked><span></span> Tự tăng tốc câu dài để khớp thời gian</label>
+            <label class="switch"><input type="checkbox" id="autoFit" checked><span></span> Tự tăng tốc câu dài cho khớp thời gian</label>
           </div>
           <div class="tile">
             <div class="tile-title">💬 Phụ đề</div>
@@ -146,27 +203,30 @@
               <label class="choice"><input type="radio" name="subMode" value="burn">
                 <div><b>In cứng</b><span>Hiện mọi nơi (TikTok, FB)</span></div></label>
             </div>
+            <label class="switch" id="biWrap"><input type="checkbox" id="bilingual"><span></span> Phụ đề song ngữ (kèm câu gốc)</label>
             <div id="burnOpts" class="hidden">
               <div class="grid-2 tight">
-                <div class="field"><label>Cỡ chữ</label><input type="number" id="subSize" value="18" min="8" max="60"></div>
-                <div class="field"><label>Màu chữ</label><input type="color" id="subColor" value="#ffffff"></div>
+                <div class="field"><label for="subSize">Cỡ chữ</label><input type="number" id="subSize" value="18" min="8" max="60"></div>
+                <div class="field"><label for="subColor">Màu chữ</label><input type="color" id="subColor" value="#ffffff"></div>
               </div>
               <label class="switch"><input type="checkbox" id="subBox"><span></span> Nền đen sau chữ</label>
+              <p class="hint">👀 Khung xem trước đang hiển thị đúng kiểu chữ này.</p>
             </div>
           </div>
         </div>
+        <div class="summary" id="summary"></div>
         <button class="btn btn-big btn-dark" id="btnRender">🎬 Tạo video lồng tiếng</button>
         <div class="progress hidden" id="prog2"><div class="bar"></div><span></span></div>
         <div class="downloads hidden" id="downloads">
-          <a class="dl dl-video" id="dlVideo" download>⬇ <b>Video MP4</b><span>có giọng đọc + phụ đề</span></a>
-          <a class="dl" id="dlSrt" download>⬇ <b>Phụ đề .SRT</b><span>dùng cho YouTube</span></a>
-          <a class="dl" id="dlVoice" download>⬇ <b>Giọng đọc .WAV</b><span>chỉ phần lồng tiếng</span></a>
+          <a class="dl dl-video" id="dlVideo" download><b>⬇ Video MP4</b><span>có giọng đọc + phụ đề</span></a>
+          <a class="dl" id="dlSrt" download><b>⬇ Phụ đề .SRT</b><span>dùng cho YouTube</span></a>
+          <a class="dl" id="dlVoice" download><b>⬇ Giọng đọc .WAV</b><span>chỉ phần lồng tiếng</span></a>
         </div>
       </section>
     </div>
   </main>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status"></div>
   <script src="app.js"></script>
 </body>
 </html>

@@ -2,13 +2,15 @@
 from .base import TTSEngine, Voice, lang_base
 from .edge import EdgeTTS
 from .espeak import EspeakTTS
+from .fpt import FptTTS
 from .gtts_engine import GoogleTTS
 from .kokoro_engine import KokoroTTS
+from .mms import MmsTTS
 from .piper_engine import PiperTTS
 from .xtts import XTTS
 
 ENGINES: dict[str, TTSEngine] = {e.id: e for e in (
-    EdgeTTS(), GoogleTTS(), PiperTTS(), KokoroTTS(), XTTS(), EspeakTTS(),
+    EdgeTTS(), PiperTTS(), FptTTS(), GoogleTTS(), MmsTTS(), KokoroTTS(), XTTS(), EspeakTTS(),
 )}
 
 

@@ -97,18 +97,24 @@ def fmt_ts(t: float, sep: str = ",") -> str:
     return f"{h:02}:{m:02}:{s:02}{sep}{ms:03}"
 
 
-def write_srt(segments: list[dict], path: Path) -> Path:
+def cue_text(seg: dict, bilingual: bool) -> str:
+    text = seg["text"].strip()
+    original = (seg.get("original") or "").strip()
+    return f"{text}\n{original}" if bilingual and original and original != text else text
+
+
+def write_srt(segments: list[dict], path: Path, bilingual: bool = False) -> Path:
     lines = []
     for i, seg in enumerate(segments, 1):
-        lines += [str(i), f"{fmt_ts(seg['start'])} --> {fmt_ts(seg['end'])}", seg["text"].strip(), ""]
+        lines += [str(i), f"{fmt_ts(seg['start'])} --> {fmt_ts(seg['end'])}", cue_text(seg, bilingual), ""]
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
 
 
-def write_vtt(segments: list[dict], path: Path) -> Path:
+def write_vtt(segments: list[dict], path: Path, bilingual: bool = False) -> Path:
     lines = ["WEBVTT", ""]
     for seg in segments:
-        lines += [f"{fmt_ts(seg['start'], '.')} --> {fmt_ts(seg['end'], '.')}", seg["text"].strip(), ""]
+        lines += [f"{fmt_ts(seg['start'], '.')} --> {fmt_ts(seg['end'], '.')}", cue_text(seg, bilingual), ""]
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
 

@@ -8,10 +8,12 @@ from dataclasses import asdict, dataclass, field
 class Voice:
     id: str
     name: str
-    lang: str            # BCP-47-ish: "vi-VN", "en", ...
+    lang: str            # BCP-47-ish: "vi-VN", "en", or "*" for voices that speak any language
     gender: str = ""     # "female" | "male" | ""
     engine: str = ""
     tags: list[str] = field(default_factory=list)
+    installed: bool = True   # False: must be downloaded before use (e.g. Piper models)
+    size_mb: float = 0
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -20,7 +22,7 @@ class Voice:
 class TTSEngine:
     id: str = ""
     name: str = ""
-    repo: str = ""            # GitHub repo the engine comes from
+    repo: str = ""            # GitHub repo (or website) the engine comes from
     description: str = ""
     install_hint: str = ""
     needs_network: bool = False

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import shutil
 import threading
 import time
@@ -23,6 +24,20 @@ JOBS_DIR = DATA / "jobs"
 PREVIEW_DIR = DATA / "previews"
 for d in (JOBS_DIR, PREVIEW_DIR):
     d.mkdir(parents=True, exist_ok=True)
+
+
+
+def load_dotenv(path: Path) -> None:
+    """Minimal .env reader (KEY=VALUE per line) so API keys like FPT_API_KEY can live in a file."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        key, sep, value = line.strip().partition("=")
+        if sep and key and not key.startswith("#"):
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_dotenv(ROOT.parent / ".env")
 
 app = FastAPI(title="Vocalize – phụ đề & lồng tiếng tự động")
 JOBS: dict[str, dict] = {}
@@ -129,6 +144,7 @@ class Segment(BaseModel):
     text: str
     engine: str
     voice: str
+    original: str | None = None
 
 
 class SubStyle(BaseModel):
@@ -147,6 +163,7 @@ class RenderRequest(BaseModel):
     original_volume: float = Field(0.15, ge=0, le=1.5)
     voice_volume: float = Field(1.0, ge=0, le=3)
     burn_subtitles: bool = False
+    bilingual: bool = False      # subtitles show the original line under the translation
     style: SubStyle = SubStyle()
 
 
@@ -158,8 +175,8 @@ def do_render(job: dict, req: RenderRequest):
     segments = sorted((s.model_dump() for s in req.segments if s.text.strip()), key=lambda s: s["start"])
     job["segments"] = segments
 
-    srt = pipeline.write_srt(segments, jdir / "subtitles.srt")
-    pipeline.write_vtt(segments, jdir / "subtitles.vtt")
+    srt = pipeline.write_srt(segments, jdir / "subtitles.srt", bilingual=req.bilingual)
+    pipeline.write_vtt(segments, jdir / "subtitles.vtt", bilingual=req.bilingual)
 
     ref = None
     if any(s["voice"].startswith("clone:") for s in segments):
@@ -246,6 +263,26 @@ async def voices(engine_id: str):
     except Exception as e:  # noqa: BLE001
         raise HTTPException(502, f"Không lấy được danh sách giọng của {engine.name}: {e}")
     return [v.to_dict() for v in result]
+
+
+class DownloadRequest(BaseModel):
+    voice: str
+
+
+@app.post("/api/voices/{engine_id}/download")
+async def download_voice(engine_id: str, req: DownloadRequest):
+    """Fetch a voice model that isn't on disk yet (Piper)."""
+    try:
+        engine = get_engine(engine_id)
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    if not hasattr(engine, "download"):
+        raise HTTPException(400, f"{engine.name} không cần tải giọng")
+    try:
+        await asyncio.to_thread(engine.download, req.voice)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"Tải giọng thất bại: {e}")
+    return [v.to_dict() for v in await asyncio.to_thread(engine.list_voices)]
 
 
 class PreviewRequest(BaseModel):

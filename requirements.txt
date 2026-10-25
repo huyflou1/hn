@@ -14,5 +14,6 @@ gTTS>=2.5                  # pndurette/gTTS
 piper-tts>=1.2             # rhasspy/piper – run scripts/download_piper_voices.py
 
 # Optional heavy engines – uncomment to enable
+# transformers torch soundfile  # Meta MMS – offline Vietnamese voice
 # kokoro>=0.9 soundfile     # hexgrad/kokoro
 # coqui-tts>=0.24           # idiap/coqui-ai-TTS – XTTS-v2 voice cloning

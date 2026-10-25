@@ -6,10 +6,11 @@ Usage:
 Full list: https://huggingface.co/rhasspy/piper-voices/blob/main/voices.json
 """
 import sys
-import urllib.request
 from pathlib import Path
 
-BASE = "https://huggingface.co/rhasspy/piper-voices/resolve/main"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from app.tts.piper_engine import VOICE_DIR, download_model  # noqa: E402
+
 DEFAULT = [
     "vi_VN-vais1000-medium",
     "vi_VN-25hours_single-low",
@@ -18,28 +19,16 @@ DEFAULT = [
     "en_US-ryan-high",
     "en_GB-alba-medium",
 ]
-DEST = Path(__file__).resolve().parents[1] / "voices" / "piper"
-
-
-def url_for(name: str, ext: str) -> str:
-    locale, speaker, quality = name.split("-")
-    return f"{BASE}/{locale.split('_')[0]}/{locale}/{speaker}/{quality}/{name}{ext}"
 
 
 def main(names: list[str]) -> None:
-    DEST.mkdir(parents=True, exist_ok=True)
     for name in names:
-        for ext in (".onnx", ".onnx.json"):
-            target = DEST / f"{name}{ext}"
-            if target.exists():
-                continue
-            print(f"↓ {target.name}")
-            try:
-                urllib.request.urlretrieve(url_for(name, ext), target)
-            except Exception as e:  # noqa: BLE001
-                target.unlink(missing_ok=True)
-                print(f"  ✗ {e}")
-    print(f"Done → {DEST}")
+        print(f"↓ {name}")
+        try:
+            download_model(name)
+        except Exception as e:  # noqa: BLE001
+            print(f"  ✗ {e}")
+    print(f"Done → {VOICE_DIR}")
 
 
 if __name__ == "__main__":
